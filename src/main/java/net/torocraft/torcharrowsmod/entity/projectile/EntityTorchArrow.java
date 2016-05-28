@@ -45,7 +45,7 @@ public class EntityTorchArrow extends EntitySpectralArrow {
     		return;
     	}
     	
-    	Block torch = Blocks.torch;
+    	Block torch = Blocks.TORCH;
 		IBlockState state = torch.getDefaultState();
 		
 		CollideAction action = CollideAction.PLACE;
@@ -69,7 +69,7 @@ public class EntityTorchArrow extends EntitySpectralArrow {
         if (rtr.entityHit != null) {
         	action = CollideAction.DROP;
         } else {
-        	if (worldObj.getBlockState(pos).getBlock().getMaterial(state).equals(Material.vine)) {
+        	if (worldObj.getBlockState(pos).getBlock().getMaterial(state).equals(Material.VINE)) {
         		action = CollideAction.BREAK;
         	} else {        		
         		switch (rtr.sideHit) {
@@ -121,7 +121,7 @@ public class EntityTorchArrow extends EntitySpectralArrow {
 
     @Override
     protected void arrowHit(EntityLivingBase living) {
-    	dropTorch(Blocks.torch, living.chunkCoordX, living.chunkCoordY, living.chunkCoordZ);
+    	dropTorch(Blocks.TORCH, living.chunkCoordX, living.chunkCoordY, living.chunkCoordZ);
     }
     
     @Override
@@ -135,7 +135,7 @@ public class EntityTorchArrow extends EntitySpectralArrow {
     
 	@Override
 	protected ItemStack getArrowStack() {
-		return new ItemStack(Items.spectral_arrow);
+		return new ItemStack(Items.SPECTRAL_ARROW);
 	}
 	
 }

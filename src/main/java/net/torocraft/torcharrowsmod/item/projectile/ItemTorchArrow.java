@@ -32,7 +32,7 @@ public class ItemTorchArrow extends ItemSpectralArrow {
 		Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(torchArrow, 0, new ModelResourceLocation(TorchArrowsMod.MODID + ":" + NAME, "inventory"));
 	}
 	
-	public EntityArrow makeTippedArrow(World worldIn, ItemStack itemStack, EntityLivingBase shooter) {
+	public EntityArrow createArrow(World worldIn, ItemStack itemStack, EntityLivingBase shooter) {
 		return new EntityTorchArrow(worldIn, shooter);
 	}
 	
