@@ -17,7 +17,7 @@ public class TorchArrowsModRecipes {
 		ItemStack coal = new ItemStack(Items.COAL);
 		ItemStack charcoal = new ItemStack(Items.COAL, 1, 1);
 		
-		GameRegistry.addRecipe(new ItemStack(ItemTorchArrow.torchArrow), "c", "s", "f", 'c', coal, 's', stick, 'f', feather);
-		GameRegistry.addRecipe(new ItemStack(ItemTorchArrow.torchArrow), "c", "s", "f", 'c', charcoal, 's', stick, 'f', feather);
+		GameRegistry.addRecipe(new ItemStack(ItemTorchArrow.torchArrow, 4), "c", "s", "f", 'c', coal, 's', stick, 'f', feather);
+		GameRegistry.addRecipe(new ItemStack(ItemTorchArrow.torchArrow, 4), "c", "s", "f", 'c', charcoal, 's', stick, 'f', feather);
 	}	
 }
