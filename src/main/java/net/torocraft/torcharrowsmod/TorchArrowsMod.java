@@ -7,8 +7,6 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.torocraft.torcharrowsmod.entity.projectile.EntityTorchArrow;
 
 @Mod (modid = TorchArrowsMod.MODID, name = TorchArrowsMod.MODNAME, version = TorchArrowsMod.VERSION)
 public class TorchArrowsMod {
