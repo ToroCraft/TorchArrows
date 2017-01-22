@@ -3,6 +3,7 @@ package net.torocraft.torcharrowsmod.item;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
@@ -30,7 +31,7 @@ public class TorchArrowsModItems {
 
 	@SideOnly(Side.CLIENT)
 	private static void registerRendersTorchArrow() {
-		EntityRegistry.registerModEntity(EntityTorchArrow.class, "TorchArrow", 100, TorchArrowsMod.instance, 80, 10, true);
+		EntityRegistry.registerModEntity(new ResourceLocation(TorchArrowsMod.MODID, "torcharrow"), EntityTorchArrow.class, "TorchArrow", 100, TorchArrowsMod.instance, 80, 10, true);
 		RenderManager rm = Minecraft.getMinecraft().getRenderManager();
 		RenderingRegistry.registerEntityRenderingHandler(EntityTorchArrow.class, new RenderTorchArrow(rm));
 	}

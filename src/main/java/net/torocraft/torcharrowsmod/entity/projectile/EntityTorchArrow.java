@@ -41,7 +41,7 @@ public class EntityTorchArrow extends EntitySpectralArrow {
     public void onUpdate() {
     	super.onUpdate();
     	
-    	if (worldObj.isRemote || !inGround) {
+    	if (world.isRemote || !inGround) {
     		return;
     	}
     	
@@ -53,7 +53,7 @@ public class EntityTorchArrow extends EntitySpectralArrow {
 		setDead();
 		Vec3d vec3d1 = new Vec3d(posX, posY, posZ);
         Vec3d vec3d = new Vec3d(posX + motionX, posY + motionY, posZ + motionZ);
-        RayTraceResult rtr = worldObj.rayTraceBlocks(vec3d1, vec3d, false, true, false);
+        RayTraceResult rtr = world.rayTraceBlocks(vec3d1, vec3d, false, true, false);
         
 		if (rtr == null || rtr.getBlockPos() == null) {
 			dropTorch(torch, (int) posX, (int) posY, (int) posZ);
@@ -69,7 +69,7 @@ public class EntityTorchArrow extends EntitySpectralArrow {
         if (rtr.entityHit != null) {
         	action = CollideAction.DROP;
         } else {
-        	if (worldObj.getBlockState(pos).getBlock().getMaterial(state).equals(Material.VINE)) {
+        	if (world.getBlockState(pos).getBlock().getMaterial(state).equals(Material.VINE)) {
         		action = CollideAction.BREAK;
         	} else {        		
         		switch (rtr.sideHit) {
@@ -103,15 +103,15 @@ public class EntityTorchArrow extends EntitySpectralArrow {
         
         switch (action) {
         	case PLACE:
-        		if (worldObj.isAirBlock(pos)) {
-        			worldObj.setBlockState(pos, state);
+        		if (world.isAirBlock(pos)) {
+        			world.setBlockState(pos, state);
         		} else {
         			dropTorch(torch, x, y, z);
         		}
         		break;
         	case BREAK:
-        		worldObj.destroyBlock(pos, true);
-        		worldObj.setBlockState(pos, torch.getDefaultState());
+        		world.destroyBlock(pos, true);
+        		world.setBlockState(pos, torch.getDefaultState());
         		break;
         	case DROP:
         		dropTorch(torch, x, y, z);
@@ -130,7 +130,7 @@ public class EntityTorchArrow extends EntitySpectralArrow {
     }
     
 	private boolean dropTorch(Block torch, int x, int y, int z) {
-		return worldObj.spawnEntityInWorld(new EntityItem(worldObj, x, y, z, new ItemStack(torch)));
+		return world.spawnEntity(new EntityItem(world, x, y, z, new ItemStack(torch)));
 	}
     
 	@Override
