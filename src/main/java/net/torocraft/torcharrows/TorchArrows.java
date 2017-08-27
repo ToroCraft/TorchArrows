@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 public class TorchArrows {
 	public static final String MODID = "torcharrowsmod";
-	public static final String VERSION = "1.12.1-2";
+	public static final String VERSION = "1.12.1-3";
 	public static final String MODNAME = "TorchArrows";
 
 	@Instance(value = TorchArrows.MODID)
