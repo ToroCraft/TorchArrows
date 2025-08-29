@@ -6,16 +6,9 @@
     "f"
   ],
   "key": {
-    "c": [
-      {
-        "item": "minecraft:coal",
-        "data": 0
-      },
-      {
-        "item": "minecraft:coal",
-        "data": 1
-      }
-    ],
+    "c": {
+      "tag": "minecraft:coals"
+    },
     "s": {
       "item": "minecraft:stick"
     },
@@ -24,7 +17,7 @@
     }
   },
   "result": {
-    "item": "torcharrowsmod:torch_arrow",
+    "id": "torcharrows:torch_arrow",
     "count": 4
   }
 }

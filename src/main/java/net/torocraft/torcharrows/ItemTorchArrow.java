@@ -1,47 +1,33 @@
 package net.torocraft.torcharrows;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.projectile.EntityArrow;
-import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemSpectralArrow;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.ArrowItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
-@Mod.EventBusSubscriber
-public class ItemTorchArrow extends ItemSpectralArrow {
+public class ItemTorchArrow extends ArrowItem {
 
-	public static final String NAME = "torch_arrow";
+    public static final String NAME = "torch_arrow";
 
-	public static ItemTorchArrow INSTANCE;
+    public ItemTorchArrow(Properties properties) {
+        super(properties);
+    }
 
-	public ItemTorchArrow(String unlocalizedName, int renderIndexIn, EntityEquipmentSlot equipmentSlotIn) {
-		this.setUnlocalizedName(unlocalizedName);
-	}
+    @Override
+    public AbstractArrow createArrow(Level level, ItemStack itemStack, LivingEntity shooter, ItemStack weapon) {
+        return new EntityTorchArrow(level, shooter, itemStack);
+    }
 
-	@SubscribeEvent
-	public static void init(final RegistryEvent.Register<Item> event) {
-		INSTANCE = new ItemTorchArrow(NAME, 1, EntityEquipmentSlot.OFFHAND);
-		INSTANCE.setRegistryName(TorchArrows.MODID, NAME);
-		event.getRegistry().register(INSTANCE);
-	}
+    // Override isInfinite to ensure torch arrows are always consumed
+    public boolean isInfinite(ItemStack stack, ItemStack bow, net.minecraft.world.entity.player.Player player) {
+        // Always return false to ensure torch arrows are consumed when fired
+        return false;
+    }
 
-	@SideOnly(Side.CLIENT)
-	public static void registerRenders() {
-		Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
-				.register(INSTANCE, 0, new ModelResourceLocation(TorchArrows.MODID + ":" + NAME, "inventory"));
-	}
-
-	@Override
-	public EntityArrow createArrow(World worldIn, ItemStack itemStack, EntityLivingBase shooter) {
-		return new EntityTorchArrow(worldIn, shooter);
-	}
-
+    // Helper method to get the registered item
+    public static Item get() {
+        return TorchArrows.TORCH_ARROW_ITEM.get();
+    }
 }

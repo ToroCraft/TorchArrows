@@ -1,161 +1,105 @@
 package net.torocraft.torcharrows;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockTorch;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.projectile.EntitySpectralArrow;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 
-public class EntityTorchArrow extends EntitySpectralArrow {
+public class EntityTorchArrow extends AbstractArrow {
 
-	private static final String NAME = "TorchArrow";
+    public EntityTorchArrow(EntityType<? extends AbstractArrow> entityType, Level level) {
+        super(entityType, level);
+    }
 
-	private double damage;
-	private enum CollideAction {PLACE, BREAK, DROP}
+    public EntityTorchArrow(Level level, LivingEntity shooter, ItemStack pickupItemStack) {
+        super(TorchArrows.ENTITY_TYPES_TORCH_ARROW.get(), shooter, level, pickupItemStack, pickupItemStack);
+    }
 
-	public static void init(int entityID) {
-		ResourceLocation registryName = new ResourceLocation(TorchArrows.MODID, NAME);
-		EntityRegistry
-				.registerModEntity(registryName, EntityTorchArrow.class, registryName.toString(), entityID, TorchArrows.INSTANCE, 80, 10, true);
-	}
+    public EntityTorchArrow(Level level, double x, double y, double z, ItemStack pickupItemStack) {
+        super(TorchArrows.ENTITY_TYPES_TORCH_ARROW.get(), x, y, z, level, pickupItemStack, pickupItemStack);
+    }
 
-	@SideOnly(Side.CLIENT)
-	public static void registerRenders() {
-		RenderManager rm = Minecraft.getMinecraft().getRenderManager();
-		RenderingRegistry.registerEntityRenderingHandler(EntityTorchArrow.class, new RenderTorchArrow(rm));
-	}
+    @Override
+    protected void onHitBlock(BlockHitResult result) {
+        super.onHitBlock(result);
+        
+        if (!level().isClientSide) {
+            placeTorchAtHit(result.getBlockPos(), result.getDirection());
+            this.discard();
+        }
+    }
 
-	public EntityTorchArrow(World worldIn) {
-		super(worldIn);
-		damage = 0.0;
-	}
+    @Override
+    protected void onHitEntity(EntityHitResult result) {
+        if (!level().isClientSide) {
+            Entity entity = result.getEntity();
+            // Set the entity on fire for 5 seconds (100 ticks)
+            entity.setRemainingFireTicks(100);
+            this.discard();
+        }
+    }
 
-	public EntityTorchArrow(World worldIn, EntityLivingBase shooter) {
-		super(worldIn, shooter);
-		damage = 0.0;
-	}
+    private void placeTorchAtHit(BlockPos hitPos, Direction face) {
+        Block torch = Blocks.TORCH;
+        BlockState state = torch.defaultBlockState();
+        BlockPos targetPos;
+        
+        if (face == Direction.UP) {
+            // Place standing torch above the hit block
+            targetPos = hitPos.relative(face);
+            if (level().isEmptyBlock(targetPos)) {
+                level().setBlock(targetPos, state, 3);
+            } else {
+                dropTorch(torch, targetPos);
+            }
+        } else if (face != Direction.DOWN) {
+            // Place wall torch adjacent to the hit block
+            targetPos = hitPos.relative(face);
+            if (level().isEmptyBlock(targetPos)) {
+                Block wallTorch = Blocks.WALL_TORCH;
+                BlockState wallState = wallTorch.defaultBlockState();
+                try {
+                    wallState = wallState.setValue(net.minecraft.world.level.block.WallTorchBlock.FACING, face);
+                    level().setBlock(targetPos, wallState, 3);
+                } catch (Exception e) {
+                    dropTorch(torch, targetPos);
+                }
+            } else {
+                dropTorch(torch, targetPos);
+            }
+        } else {
+            // Can't place on bottom, drop instead
+            dropTorch(torch, hitPos);
+        }
+    }
 
-	public EntityTorchArrow(World worldIn, double x, double y, double z) {
-		super(worldIn, x, y, z);
-		damage = 0.0;
-	}
+    private void dropTorch(Block torch, BlockPos pos) {
+        ItemStack torchStack = new ItemStack(torch);
+        ItemEntity itemEntity = new ItemEntity(level(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, torchStack);
+        level().addFreshEntity(itemEntity);
+    }
 
-	@Override
-	public void onUpdate() {
-		super.onUpdate();
+    @Override
+    protected ItemStack getPickupItem() {
+        return new ItemStack(ItemTorchArrow.get());
+    }
 
-		if (world.isRemote || !inGround) {
-			return;
-		}
+    @Override
+    protected ItemStack getDefaultPickupItem() {
+        return new ItemStack(ItemTorchArrow.get());
+    }
 
-		Block torch = Blocks.TORCH;
-		IBlockState state = torch.getDefaultState();
-
-		CollideAction action = CollideAction.PLACE;
-
-		setDead();
-		Vec3d vec3d1 = new Vec3d(posX, posY, posZ);
-		Vec3d vec3d = new Vec3d(posX + motionX, posY + motionY, posZ + motionZ);
-		RayTraceResult rtr = world.rayTraceBlocks(vec3d1, vec3d, false, true, false);
-
-		if (rtr == null || rtr.getBlockPos() == null) {
-			dropTorch(torch, (int) posX, (int) posY, (int) posZ);
-			return;
-		}
-
-		BlockPos pos = rtr.getBlockPos();
-
-		int x = pos.getX();
-		int y = pos.getY();
-		int z = pos.getZ();
-
-		if (rtr.entityHit != null) {
-			action = CollideAction.DROP;
-		} else {
-			if (world.getBlockState(pos).getBlock().getMaterial(state).equals(Material.VINE)) {
-				action = CollideAction.BREAK;
-			} else {
-				switch (rtr.sideHit) {
-				case DOWN:
-					y--;
-					break;
-				case UP:
-					y++;
-					break;
-				case NORTH:
-					state = state.withProperty(BlockTorch.FACING, EnumFacing.NORTH);
-					z--;
-					break;
-				case SOUTH:
-					state = state.withProperty(BlockTorch.FACING, EnumFacing.SOUTH);
-					z++;
-					break;
-				case WEST:
-					state = state.withProperty(BlockTorch.FACING, EnumFacing.WEST);
-					x--;
-					break;
-				case EAST:
-					state = state.withProperty(BlockTorch.FACING, EnumFacing.EAST);
-					x++;
-					break;
-				}
-
-				pos = new BlockPos(x, y, z);
-			}
-		}
-
-		switch (action) {
-		case PLACE:
-			if (world.isAirBlock(pos)) {
-				world.setBlockState(pos, state);
-			} else {
-				dropTorch(torch, x, y, z);
-			}
-			break;
-		case BREAK:
-			world.destroyBlock(pos, true);
-			world.setBlockState(pos, torch.getDefaultState());
-			break;
-		case DROP:
-			dropTorch(torch, x, y, z);
-			break;
-		}
-	}
-
-	@Override
-	protected void arrowHit(EntityLivingBase living) {
-		dropTorch(Blocks.TORCH, living.chunkCoordX, living.chunkCoordY, living.chunkCoordZ);
-	}
-
-	@Override
-	public double getDamage() {
-		return 0.0;
-	}
-
-	private boolean dropTorch(Block torch, int x, int y, int z) {
-		return world.spawnEntity(new EntityItem(world, x, y, z, new ItemStack(torch)));
-	}
-
-	@Override
-	protected ItemStack getArrowStack() {
-		return new ItemStack(Items.SPECTRAL_ARROW);
-	}
-
+    public double getBaseDamage() {
+        return 0.0; // Torch arrows don't do damage
+    }
 }
